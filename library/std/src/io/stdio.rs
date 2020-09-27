@@ -5,9 +5,7 @@ use crate::io::prelude::*;
 use crate::cell::RefCell;
 use crate::fmt;
 use crate::io::lazy::Lazy;
-use crate::io::{
-    self, BufReader, Error, ErrorKind, Initializer, IoSlice, IoSliceMut, LineWriter, Result, Write,
-};
+use crate::io::{self, BufReader, Initializer, IoSlice, IoSliceMut, LineWriter};
 use crate::sync::{Arc, Mutex, MutexGuard, Once};
 use crate::sys::stdio;
 use crate::sys_common::remutex::{ReentrantMutex, ReentrantMutexGuard};
@@ -902,49 +900,6 @@ impl Write for StderrLock<'_> {
 impl fmt::Debug for StderrLock<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.pad("StderrLock { .. }")
-    }
-}
-
-/// Reads a [`String`] from [standard input](Stdin). The trailing
-/// newline is stripped. Gives an error on EOF (end of file).
-///
-/// # Note
-///
-/// If you require more explicit control over capturing
-/// user input, see the [`Stdin::read_line`] method.
-///
-/// # Examples
-///
-/// ```no_run
-/// #![feature(io_input)]
-/// use std::io;
-///
-/// fn main() -> io::Result<()> {
-///     print!("Enter name: ");
-///
-///     let name: String = io::read_line()?;
-///
-///     println!("Your name is {}!", name);
-///
-///     Ok(())
-/// }
-/// ```
-#[unstable(
-    feature = "io_input",
-    reason = "this function may be replaced with a more general mechanism",
-    issue = "none"
-)]
-pub fn read_line() -> Result<String> {
-    stdout().flush()?; // print!() does not flush :(
-    let mut input = String::new();
-    match stdin().read_line(&mut input)? {
-        0 => Err(Error::new(ErrorKind::UnexpectedEof, "input reached eof unexpectedly")),
-        _ => {
-            input.pop();
-            #[cfg(windows)]
-            input.pop();
-            Ok(input)
-        }
     }
 }
 
